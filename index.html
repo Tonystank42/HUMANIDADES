@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Los Inge — ESIME: Historia, Presente y Orgullo</title>
+  <meta name="description" content="Presentación web animada sobre la ESIME: historia 1936–actualidad, sedes, materias, estructura orgánica, escudo e identidad. Enfoque en ESIME Azcapotzalco. By: Los Inge."/>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --bg-soft: #0f1620;
+      --card: #111924;
+      --txt: #e6f0ff;
+      --muted: #9bb3cc;
+      --accent: #00d084; /* verde ing */
+      --accent-2: #f0b400; /* dorado escudo */
+      --danger: #ff4d4d;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Inter,Segoe UI,Roboto,system-ui,Arial,sans-serif;
+      color:var(--txt);background:linear-gradient(140deg,#0a0e13,#0d121a 30%,#0b1118 60%,#0a0e13);
+      overflow-x:hidden;
+    }
+    /* Loader */
+    #loader{
+      position:fixed;inset:0;background:radial-gradient(60% 60% at 50% 40%,#0f1823,#06090f 60%);
+      display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;
+    }
+    .spinner{width:86px;height:86px;border-radius:50%;border:5px solid rgba(255,255,255,.08);border-top-color:var(--accent);animation:spin 1s linear infinite;box-shadow:var(--shadow)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader-title{margin-top:18px;font-weight:800;letter-spacing:.2em}
+    .loader-sub{opacity:.7;font-size:.9rem}
+
+    /* Floating particles background */
+    .particle{position:fixed;border-radius:50%;opacity:.15;pointer-events:none;filter:blur(1px)}
+
+    header{
+      position:sticky;top:0;backdrop-filter:blur(8px);
+      background:rgba(10,14,19,.55);border-bottom:1px solid rgba(255,255,255,.06);
+      z-index:50;display:flex;gap:16px;align-items:center;justify-content:space-between;
+      padding:10px 18px
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      box-shadow:0 0 20px rgba(0,208,132,.45) inset, 0 8px 20px rgba(0,0,0,.35);
+      position:relative;overflow:hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+    nav{display:flex;flex-wrap:wrap;gap:10px}
+    nav a{padding:8px 12px;border-radius:999px;background:#0e1722;color:var(--txt);text-decoration:none;border:1px solid rgba(255,255,255,.06);font-size:.9rem}
+    nav a:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+
+    .hero{position:relative;padding:80px 20px 40px;display:grid;place-items:center;text-align:center}
+    .hero h1{font-size:clamp(36px,6vw,64px);margin:0;line-height:1.05}
+    .glow{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .subtitle{max-width:900px;color:var(--muted);margin:14px auto 0;font-size:1.05rem}
+    .cta{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    .btn{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,#121b26,#0d141d);padding:12px 16px;border-radius:14px;color:var(--txt);text-decoration:none;font-weight:600;box-shadow:var(--shadow)}
+    .btn.primary{background:linear-gradient(180deg,#13a86c,#0b8b5a);border-color:#0bc07c}
+    .btn:hover{transform:translateY(-2px);filter:saturate(1.1)}
+
+    main{padding:30px 16px 100px;max-width:1200px;margin:0 auto}
+    section{margin:28px 0;padding:22px;border-radius:var(--radius);background:linear-gradient(180deg,#0d1520,#0a121b);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
+    section h2{margin-top:0}
+
+    /* Grid util */
+    .grid{display:grid;gap:16px}
+    .g-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .g-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    @media (max-width:900px){.g-2,.g-3,.g-4{grid-template-columns:1fr}}
+
+    .card{background:linear-gradient(180deg,#101824,#0c141e);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px}
+    .tag{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);padding:6px 10px;border-radius:999px;font-size:.85rem;background:#0d1721}
+
+    /* Timeline */
+    .timeline{position:relative;padding-left:22px}
+    .timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(var(--accent),transparent)}
+    .tl-item{position:relative;margin:12px 0;padding-left:12px}
+    .tl-item::before{content:"";position:absolute;left:-14px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 18px rgba(240,180,0,.6)}
+
+    /* Accordion */
+    details{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;background:#0e1722}
+    details+details{margin-top:12px}
+    details summary{cursor:pointer;font-weight:700}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.05);text-align:left}
+    th{background:rgba(255,255,255,.04)}
+
+    /* Chips list */
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+
+    /* Footer */
+    footer{opacity:.8;text-align:center;margin:40px 0 80px}
+
+    /* Reveal animations */
+    .reveal{opacity:0;transform:translateY(16px);transition:all .7s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    /* Floating corner badge */
+    .corner{
+      position:fixed;right:14px;bottom:14px;background:#0f1a25;border:1px solid rgba(255,255,255,.08);
+      padding:10px 14px;border-radius:14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;z-index:40
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(0,208,132,.8)}
+
+    /* Quiz modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:60}
+    .modal.active{display:flex}
+    .modal .window{background:#0e1722;border:1px solid rgba(255,255,255,.1);border-radius:18px;max-width:720px;width:92%;padding:18px}
+    .close{float:right;border:none;background:#142234;color:var(--txt);padding:6px 10px;border-radius:12px;cursor:pointer}
+
+    /* Escudo ring */
+    .escudo-ring{width:140px;height:140px;border-radius:50%;
+      background:radial-gradient(circle at 50% 50%, rgba(0,208,132,.35), transparent 60%),
+                 conic-gradient(from 0deg,var(--accent),#65ffd1,var(--accent-2),#ffd36b,var(--accent));
+      padding:6px;display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .escudo-core{width:100%;height:100%;border-radius:50%;background:linear-gradient(180deg,#0d1420,#0a111a);display:grid;place-items:center;border:1px solid rgba(255,255,255,.08)}
+    .escudo-core span{font-weight:900;letter-spacing:.06em}
+
+    /* Presenter mode */
+    .presenter{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+    .note{display:none;margin-top:10px;color:var(--muted)}
+    .toggle-note{border:1px solid rgba(255,255,255,.12);background:#0f1a25;color:var(--txt);padding:8px 10px;border-radius:12px;cursor:pointer}
+
+    /* Section badges */
+    .section-badge{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;background:rgba(0,208,132,.08);border:1px solid rgba(0,208,132,.22)}
+
+    /* Simple progress bar */
+    .progress-wrap{position:fixed;left:0;top:0;height:4px;background:rgba(0,208,132,.25);width:100%;z-index:55}
+    .progress{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+
+    /* Small helper text */
+    .hint{font-size:.9rem;color:var(--muted)}
+    
+    /* Map container */
+    .map-container {width:100%;height:200px;border-radius:12px;overflow:hidden;margin-top:12px}
+    .map-container iframe {width:100%;height:100%;border:none}
+    
+    /* Himno section */
+    .himno-container {margin-top:20px;padding:16px;background:rgba(0,208,132,.05);border-radius:12px;border:1px solid rgba(0,208,132,.15)}
+    .himno-letra {max-height:300px;overflow-y:auto;padding:12px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:12px}
+    .audio-controls {display:flex;align-items:center;gap:12px;margin-top:12px}
+    .audio-controls button {padding:8px 16px;border-radius:8px;background:var(--accent);color:#000;border:none;cursor:pointer;font-weight:600}
+    .audio-controls button:hover {background:#00e691}
+  </style>
+</head>
+<body>
+  <!-- Loader -->
+  <div id="loader" aria-live="polite" aria-busy="true">
+    <div class="spinner" role="progressbar" aria-label="Cargando"></div>
+    <div class="loader-title">LOS INGE</div>
+    <div class="loader-sub">Preparando la expo…</div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap" aria-hidden="true"><div class="progress" id="progress"></div></div>
+
+  <!-- Random particles backdrop -->
+  <div id="particles"></div>
+
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <img src="https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/0017/9261/brand.gif?itok=oqHNQW_M" alt="Logo ESIME">
+      </div>
+      <div>
+        <div style="font-size:1.05rem;line-height:1;font-weight:800">Los Inge</div>
+        <small style="opacity:.7">ESIME — Historia & Presente</small>
+      </div>
+    </div>
+    <nav>
+      <a href="#sedes">Las 4 Sedes ESIME</a>
+      <a href="#actualidad">ESIME en la actualidad</a>
+      <a href="#historia">1936–Actualidad</a>
+      <a href="#incorporacion">Incorporación</a>
+      <a href="#donde">¿Dónde estaba?</a>
+      <a href="#materias">Materias</a>
+      <a href="#segunda">2ª sede</a>
+      <a href="#azc">ESIME Azcapotzalco</a>
+      <a href="#estructura">Apoyo & Estructura</a>
+      <a href="#mando">¿Quién manda?</a>
+      <a href="#escudo">Escudo & Himno</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1 class="glow">ESIME: Ingeniería con Historia — <span class="glow">Los Inge</span></h1>
+    <p class="subtitle">Expocision del equipo 6, ESIME y sus Cedes <b>ESIME Azcapotzalco, equipo los inge</b>.</p>
+    <div class="cta">
+      <a class="btn primary" href="#sedes">Empezar la exposición</a>
+      <a class="btn" href="#quiz">Reto rápido</a>
+    </div>
+  </section>
+
+  <main>
+    <!-- Las 4 Sedes ESIME -->
+    <section id="sedes" class="reveal">
+      <span class="section-badge">🏫 Las 4 Sedes ESIME</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h2>ESIME Zacatenco</h2>
+          <p><strong>Fundación:</strong> 1936 como parte del IPN</p>
+          <p><strong>Ubicación:</strong> Unidad Profesional Adolfo López Mateos, Zacatenco, CDMX</p>
+          <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3760.611036439614!2d-99.14607892468464!3d19.50486688169561!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1f84e5b069981%3A0x7c3d1b2b35c704c0!2sESIME%20Zacatenco%20-%20Instituto%20Polit%C3%A9cnico%20Nacional!5e0!3m2!1ses!2smx!4v1736284800000!5m2!1ses!2smx" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+          <p><strong>Carreras:</strong> Ingeniería en Comunicaciones y Electrónica, Ingeniería en Control and Automatización, Ingeniería en Robótica Industrial</p>
+          <details>
+            <summary>Estructuración Académica</summary>
+            <p>Organizada en departamentos por especialidad con laboratorios de electrónica, telecomunicaciones, control y robótica. Cuenta con programas de posgrado e investigación.</p>
+          </details>
+        </div>
+        <div class="card">
+          <h2>ESIME Ticomán</h2>
+          <p><strong>Fundación:</strong> 1972 (primera sede adicional)</p>
+          <p><strong>Ubicación:</strong> Av. Ticomán 600, San José Ticomán, Gustavo A. Madero, CDMX</p>
+          <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3760.611036439614!2d-99.14607892468464!3d19.50486688169561!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1f84e5b069981%3A0x7c3d1b2b35c704c0!2sESIME%20Zacatenco%20-%20Instituto%20Polit%C3%A9cnico%20Nacional!5e0!3m2!1ses!2smx!4v1736284800000!5m2!1ses!2smx" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+          <p><strong>Carreras:</strong> Ingeniería Mecánica, Ingeniería en Sistemas Automotrices</p>
+          <details>
+            <summary>Estructuración Académica</summary>
+            <p>Enfocada en ingeniería mecánica con especialidades en diseño, manufactura, termofluidos y sistemas automotrices. Laboratorios especializados en motores, metrología y manufactura.</p>
+          </details>
+        </div>
+      </div>
+      <div class="grid g-2" style="margin-top:16px">
+        <div class="card">
+          <h2>ESIME Azcapotzalco</h2>
+          <p><strong>Fundación:</strong> 1975 (segunda sede adicional)</p>
+          <p><strong>Ubicación:</strong> Av. de las Granjas 682, Santa Catarina, Azcapotzalco, CDMX</p>
+          <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3761.612949381391!2d-99.1832429246853!3d19.46307218171128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1f82d60e7c5a5%3A0x4b8b9f8b0f8b0f8b!2sESIME%20Azcapotzalco%20-%20Instituto%20Polit%C3%A9cnico%20Nacional!5e0!3m2!1ses!2smx!4v1736284800000!5m2!1ses!2smx" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+          <p><strong>Carreras:</strong> Ingeniería Mecánica, Ingeniería Eléctrica</p>
+          <details>
+            <summary>Estructuración Académica</summary>
+            <p>Organizada en departamentos de Ingeniería Mecánica e Ingeniería Eléctrica. Cuenta con laboratorios especializados en sistemas de potencia, máquinas eléctricas, manufactura, turbomaquinaria y combustión.</p>
+          </details>
+        </div>
+        <div class="card">
+          <h2>ESIME Culhuacán</h2>
+          <p><strong>Fundación:</strong> 1981 (tercera sede adicional)</p>
+          <p><strong>Ubicación:</strong> Av. Santa Ana 1000, San Francisco Culhuacán, Coyoacán, CDMX</p>
+          <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3764.611036439614!2d-99.11607892468664!3d19.32486688172561!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ce01c28b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sESIME%20Culhuac%C3%A1n%20-%20Instituto%20Polit%C3%A9cnico%20Nacional!5e0!3m2!1ses!2smx!4v1736284800000!5m2!1ses!2smx" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+          <p><strong>Carreras:</strong> Ingeniería en Computación, Ingeniería en Telecomunicaciones</p>
+          <details>
+            <summary>Estructuración Académica</summary>
+            <p>Especializada en tecnologías de la información con departamentos de computación y telecomunicaciones. Laboratorios de redes, software, inteligencia artificial y comunicaciones.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESIME en la actualidad -->
+    <section id="actualidad" class="reveal">
+      <span class="section-badge">📌 ESIME en la actualidad</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h2>Oferta y Alcance</h2>
+          <p>La ESIME mantiene programas de ingeniería clave para México: comunicaciones y electrónica, control y automatización, robótica, mecánica, eléctrica y computación (según sede). Se impulsa la vinculación con industria, prácticas profesionales y proyectos de innovación.</p>
+          <div class="chips">
+            <span class="tag">Vinculación con industria</span>
+            <span class="tag">Laboratorios especializados</span>
+            <span class="tag">Proyectos terminales</span>
+            <span class="tag">Posgrado e investigación</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Enfoque Formativo</h2>
+          <p>Tronco común sólido (4–5 semestres) que consolida matemáticas, física, química y computación; después, especialización por carrera and por sede. Competencias en diseño, simulación, pruebas y liderazgo de ingeniería.</p>
+          <details><summary>Notas para exponer</summary>
+            <div class="note-content">
+              <ul>
+                <li>Objetivo: formar ingenieras/os con base científica y aplicación real.</li>
+                <li>Importancia de prácticas y proyectos con empresas.</li>
+                <li>Participación en competencias, hackatones y capítulos estudiantiles.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Historia 1936–Actualidad -->
+    <section id="historia" class="reveal">
+      <span class="section-badge">🕰️ ESIME 1936–Actualidad</span>
+      <div class="timeline">
+        <div class="tl-item">
+          <h3>1932–1936: Orígenes</h3>
+          <p>Nace como EIME (Escuela de Ingenieros Mecánicos y Electricistas). En 1936 se incorpora al recién creado IPN, consolidando su papel nacional.</p>
+        </div>
+        <div class="tl-item">
+          <h3>1964: Unidad Profesional Zacatenco</h3>
+          <p>Traslado e impulso de infraestructura en la Unidad Profesional <em>Adolfo López Mateos</em>.</p>
+        </div>
+        <div class="tl-item">
+          <h3>1972–1981: Expansion de sedes</h3>
+          <p><b>Ticomán (1972)</b>, <b>Azcapotzalco (1975)</b> y <b>Culhuacán (1981)</b> amplían cobertura y especialización.</p>
+        </div>
+        <div class="tl-item">
+          <h3>Hoy</h3>
+          <p>Presencia en sectores energía, manufactura, transporte, TIC, aeroespacial y salud; con proyectos multidisciplinarios y colaboración interinstitucional.</p>
+        </div>
+      </div>
+      <div class="presenter"><button class="toggle-note">🎤 Notas del presentador</button></div>
+      <div class="note">
+        <p>Enfatiza la continuidad histórica: de EIME a ESIME dentro del IPN y cómo cada etapa responde a necesidades nacionales.</p>
+      </div>
+    </section>
+
+    <!-- Incorporación de la ESIME -->
+    <section id="incorporacion" class="reveal">
+      <span class="section-badge">🔗 Incorporación al IPN</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h2>Contexto</h2>
+          <p>La ESIME se integra formalmente al IPN en la década de 1930 (marco de 1936), al unificarse escuelas técnicas para fortalecer la educación pública y el desarrollo industrial del país.</p>
+          <p class="hint">Tip: menciona el proyecto educativo cardenista y la idea de educación tecnológica como motor social.</p>
+        </div>
+        <div class="card">
+          <h2>Impacto</h2>
+          <ul>
+            <li>Modelo por competencias técnicas y científicas.</li>
+            <li>Red de laboratorios y vinculación productiva.</li>
+            <li>Escalabilidad: sedes según necesidades regionales.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ¿Dónde estaba? -->
+    <section id="donde" class="reveal">
+      <span class="section-badge">📍 ¿Dónde estaba la ESIME?</span>
+      <p>Antes de la consolidación en Zacatenco, la escuela tuvo sedes históricas en la Ciudad de México asociadas a la formación práctica de ingenieras/os. Con la Unidad Zacatenco (1964) se modernizan aulas, laboratorios y la vida politécnica.</p>
+      <details>
+        <summary>Dato para enfatizar</summary>
+        <p>El traslado a Zacatenco permitió integrar centros, escuelas y laboratorios en un ecosistema tecnológico único en México.</p>
+      </details>
+    </section>
+
+    <!-- Materias -->
+    <section id="materias" class="reveal">
+      <span class="section-badge">📚 Materias (tronco y especialidad)</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h3>Tronco común (4–5 semestres)</h3>
+          <ul>
+            <li>Cálculo diferencial/integral, Álgebra lineal</li>
+            <li>Física clásica y electromagnetismo</li>
+            <li>Química y ciencia de materiales (base)</li>
+            <li>Computación y programación básica</li>
+            <li>Expresión oral y escrita / Dibujo técnico</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Especialidad (según sede/carrera)</h3>
+          <ul>
+            <li>Telecomunicaciones, microondas, redes</li>
+            <li>Control, automatización, robótica</li>
+            <li>Mecánica, termofluidos, diseño asistido</li>
+            <li>Eléctrica, sistemas de potencia, máquinas</li>
+            <li>Computación: software, arquitectura, ciberseguridad</li>
+          </ul>
+        </div>
+      </div>
+      <p class="hint">Extra: puedes mostrar planes de estudio específicos por sede si el profesor lo pide.</p>
+    </section>
+
+    <!-- 2ª sede creada -->
+    <section id="segunda" class="reveal">
+      <span class="section-badge">🏫 2ª sede creada</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h3>Ticomán (1972)</h3>
+          <p>Considerada la primera expansión. Ofrece IMEC e IELCT con énfasis en instrumentación y sistemas digitales; impulso a proyectos de biomecánica.</p>
+        </div>
+        <div class="card">
+          <h3>Después: Azcapotzalco (1975) y Culhuacán (1981)</h3>
+          <p>Azcapotzalco fortalece mecánica y eléctrica; Culhuacán aporta la Ingeniería en Computación y TIC. Cada sede consolida laboratorios propios y vínculos industriales.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESIME Azcapotzalco (prioritaria) -->
+    <section id="azc" class="reveal">
+      <span class="section-badge">💡 ESIME Azcapotzalco — Protagonista</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card">
+          <h2>Perfil de la sede</h2>
+          <p>Fundada en 1975 para atender el norte y poniente de la CDMX. Enfocada en <b>Ingeniería Mecánica</b> e <b>Ingeniería Eléctrica</b>, con fortaleza en sistemas de potencia, máquinas eléctricas, diseño y manufactura.</p>
+          <div class="chips">
+            <span class="tag">Turbomaquinaria</span>
+            <span class="tag">Sistemas de potencia</span>
+            <span class="tag">Manufactura y materiales</span>
+            <span class="tag">Motores de combustión</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Vinculación y Oportunidades</h2>
+          <ul>
+            <li>Alianzas con energía, automotriz y transporte.</li>
+            <li>Prácticas, servicio social y proyectos con industria.</li>
+            <li>Competencias estudiantiles y proyectos integradores.</li>
+          </ul>
+          <details><summary>Notas para exponer</summary>
+            <p>Resalta cómo la ubicación en Azcapotzalco facilita el contacto con corredores industriales y centros de innovación.</p>
+          </details>
+        </div>
+      </div>
+      <div class="grid g-3" style="margin-top:12px">
+        <div class="card">
+          <h3>IMEC</h3>
+          <p>Diseño mecánico, CAD/CAE, manufactura, materiales, termofluidos.</p>
+        </div>
+        <div class="card">
+          <h3>IE</h3>
+          <p>Potencia, máquinas eléctricas, calidad de energía, protección y regulación.</p>
+        </div>
+        <div class="card">
+          <h3>Laboratorios Clave</h3>
+          <p>Máquinas eléctricas, turbomaquinaria, combustión, fundición, soldadura, metrología.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Apoyo, docentes, estructura orgánica -->
+    <section id="estructura" class="reveal">
+      <span class="section-badge">🏛️ Apoyo, Docentes y Estructura Orgánica</span>
+      <div class="grid g-3" style="margin-top:12px">
+        <div class="card">
+          <h3>Apoyos al alumnado</h3>
+          <ul>
+            <li>Becas académicas y de manutención (según convocatoria).</li>
+            <li>Movilidad e intercambio (nacional/internacional).</li>
+            <li>Centros de cómputo, bibliotecas y talleres.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Docentes</h3>
+          <p>Profesorado con experiencia industrial y de investigación. Participación en cuerpos académicos, publicación y desarrollo tecnológico.</p>
+        </div>
+        <div class="card">
+          <h3>Estructura Orgánica (general)</h3>
+          <ul>
+            <li>Dirección de la ESIME (por sede)</li>
+            <li>Subdirecciones: Académica, de Servicios Educativos e Investigación, Administrativa</li>
+            <li>Departamentos académicos por carrera/especialidad</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quién manda en ESIME Azcapotzalco -->
+    <section id="mando" class="reveal">
+      <span class="section-badge">🧭 ¿Quién manda en ESIME Azcapotzalco?</span>
+      <p>La conducción recae en la <b>Dirección de la ESIME Azcapotzalco</b>, apoyada por subdirecciones y jefaturas de departamento. Los nombramientos pueden cambiar por periodos; por ello, en la exposición se sugiere mencionar <i>cargos</i> y funciones más que nombres propios.</p>
+      <table>
+        <thead><tr><th>Cargo</th><th>Responsabilidad</th></tr></thead>
+        <tbody>
+          <tr><td>Dirección</td><td>Gestión estratégica, representación institucional y vinculación.</td></tr>
+          <tr><td>Subdirección Académica</td><td>Plan de estudios, docencia, evaluación y tutorías.</td></tr>
+          <tr><td>Subdirección de Servicios Educativos e Investigación</td><td>Investigación, laboratorios, bibliotecas y proyectos.</td></tr>
+          <tr><td>Subdirección Administrativa</td><td>Recursos humanos, materiales y financieros.</td></tr>
+          <tr><td>Jefaturas de Departamento</td><td>Operación académica por área (IMEC, IE, etc.).</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">Si piden nombres actuales, consulta el sitio oficial de la sede or la Gaceta Politécnica más reciente.</p>
+    </section>
+
+    <!-- Escudo, colores e himno -->
+    <section id="escudo" class="reveal">
+      <span class="section-badge">🛡️ Escudo de la ESIME (colores e himno)</span>
+      <div class="grid g-2" style="margin-top:12px">
+        <div class="card" style="display:flex;gap:14px;align-items:center">
+          <div class="escudo-ring" aria-hidden="true">
+            <div class="escudo-core"><span>ESIME</span></div>
+          </div>
+          <div>
+            <h3>Colores</h3>
+            <p>La identidad tradicional combina <b>verde</b> y <b>dorado</b>, asociados a ingeniería, energía y excelencia.</p>
+            <img src="https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/0017/9261/brand.gif?itok=oqHNQW_M" alt="Logo ESIME">
+            <div class="chips">
+              <span class="tag">Verde — Innovación</span>
+              <span class="tag">Dorado — Prestigio</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Himno de la ESIME</h3>
+          <div class="himno-container">
+            <div class="himno-letra">
+              <p>Compañeros de la ESIME<br>
+              Nos enciende un mismo ideal<br>
+              El servicio a nuestra patria<br>
+              Con fervor y con lealtad.</p>
+              
+              <p>Adelante, lucharemos<br>
+              Con aliento triunfador,<br>
+              Porque unidos siempre estemos<br>
+              Por un México mejor.</p>   
+
+              <p>Madre escuela, nos legaste<br>
+              El tesoro del saber,<br>
+              En tus aulas enseñaste<br>
+              A cumplir con el deber.</p>
+ 
+              <p>Tus maestros con ejemplo<br>
+              De honradez y rectitud<br>
+              Te erigieron en tu templo<br>
+              De enseñanza y de virtud.</p>
+ 
+              <p>En tus siglas hay historia<br>
+              Tus salones son altar<br>
+              Donde se honra la memoria<br>
+              De quien honra supo dar.</p>
+ 
+              <p>Son tus hijos egresados<br>
+              Patrimonio y pedestal,<br>
+              Con su esfuerzo convertidos<br>
+              En orgullo nacional.</p>
+ 
+              <p>Cerca o lejos por el mundo,<br>
+              Con trabajo y dignidad,<br>
+              Con afán y amor profundo,<br>
+              Buen ejemplo hemos de dar.</p>
+ 
+              <p>Olvidemos los rencores;<br>
+              Ante todo, la lealtad,<br>
+              Que este canto se convierta<br>
+              En un himno a la hermandad.</p>
+ 
+              <p>Que este canto se convierta<br>
+              En un himno a la hermandad.</p>
+            </div>
+            <div class="audio-controls">
+              <button id="playHimno">Reproducir Himno</button>
+              <button id="pauseHimno">Pausar</button>
+            </div>
+            <audio id="himnoAudio">
+              <!-- Aquí cargarás el archivo de audio -->
+              <source src="eh.mp3" type="audio/mpeg">
+              Tu navegador no soporta el elemento de audio.
+            </audio>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz / Interacción -->
+    <section id="quiz" class="reveal">
+      <span class="section-badge">🧪 Reto rápido</span>
+      <p>¿Listos, Los Inge? Comprueba lo aprendido:</p>
+      <div class="grid g-2">
+        <div class="card">
+          <p><b>1)</b> ¿En qué años se expandió la ESIME con Ticomán, Azcapotzalco y Culhuacán?</p>
+          <input id="q1" placeholder="Escribe tu respuesta" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0e1722;color:var(--txt)">
+        </div>
+        <div class="card">
+          <p><b>2)</b> Menciona 2 fortalezas de ESIME Azcapotzalco.</p>
+          <input id="q2" placeholder="Tu respuesta" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0e1722;color:var(--txt)">
+        </div>
+      </div>
+      <div style="margin-top:12px"><button class="btn primary" id="btnQuiz">Comprobar</button></div>
+    </section>
+
+    <section class="reveal">
+      <div class="card">
+        <h2>Modo Exposición (30+ min)</h2>
+        <p>Consejos para el flujo:</p>
+        <ol>
+          <li>5 min — Actualidad: oferta, enfoque y competencias.</li>
+          <li>8 min — Historia 1936–hoy: línea del tiempo.</li>
+          <li>8 min — Sedes y 2ª sede: Ticomán → Azcapotzalco → Culhuacán.</li>
+          <li>6 min — Azcapotzalco a detalle: fortalezas, laboratorios, industria.</li>
+          <li>3 min — Estructura orgánica y apoyos.</li>
+          <li>2–4 min — Escudo/colores/himno e identidad politécnica.</li>
+        </ol>
+        <p class="hint">Activa las "Notas del presentador" y el quiz para dinamizar.</p>
+      </div>
+    </section>
+
+    <footer>
+      Hecho con 💚 por <b>Los Inge</b>. <br/>
+      <small>Agradecemos su atencion</small>
+    </footer>
+  </main>
+
+  <!-- Corner status -->
+  <div class="corner" role="status"><div class="dot"></div> Modo exposición listo</div>
+
+  <!-- Modal de resultados -->
+  <div class="modal" id="modal">
+    <div class="window">
+      <button class="close" id="closeModal">Cerrar</button>
+      <h3>Resultados del reto</h3>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    // Loader control
+    window.addEventListener('load',()=>{
+      setTimeout(()=>{
+        document.getElementById('loader').style.opacity='0';
+        document.getElementById('loader').style.transition='opacity .6s ease';
+        setTimeout(()=>{document.getElementById('loader').style.display='none'},600);
+      },600);
+    });
+
+    // Particles
+    const particles = document.getElementById('particles');
+    for(let i=0;i<32;i++){
+      const p=document.createElement('div');
+      p.className='particle';
+      const size=Math.random()*4+2;
+      p.style.width=p.style.height=size+'px';
+      p.style.background=['#00d084','#f0b400','#69f0ff'][i%3];
+      p.style.left=Math.random()*100+'vw';
+      p.style.top=Math.random()*100+'vh';
+      p.style.animation=`float${i} ${8+Math.random()*10}s linear infinite`;
+      const style=document.createElement('style');
+      const x=Math.random()*100,y=Math.random()*100;
+      style.textContent=`@keyframes float${i}{0%{transform:translate(0,0)}50%{transform:translate(${x}%,${y}%)}100%{transform:translate(0,0)}}`;
+      document.head.appendChild(style);
+      particles.appendChild(p);
+    }
+
+    // Reveal on scroll
+    const obs=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in')}})
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+    // Presenter notes toggle
+    document.querySelectorAll('.toggle-note').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const note=btn.closest('section').querySelector('.note');
+        note.style.display= note.style.display==='block' ? 'none' : 'block';
+      })
+    });
+
+    // Progress bar
+    const prog=document.getElementById('progress');
+    const onScroll=()=>{
+      const s=window.scrollY;const h=document.body.scrollHeight-window.innerHeight;prog.style.width=((s/h)*100)+'%';
+    }
+    document.addEventListener('scroll',onScroll,{passive:true});
+    onScroll();
+
+    // Simple quiz
+    const modal=document.getElementById('modal');
+    const result=document.getElementById('result');
+    document.getElementById('btnQuiz').addEventListener('click',()=>{
+      const a1=(document.getElementById('q1').value||'').trim();
+      const a2=(document.getElementById('q2').value||'').trim();
+      const ok1 = /1972.*1975.*1981|1972\D+1975\D+1981/.test(a1);
+      const ok2 = /(potencia|máquinas|manufactura|turbomaquinaria|combustión|industria)/i.test(a2);
+      let html='';
+      html+=`<p><b>1)</b> ${ok1? '✅ Correcto: Ticomán (1972), Azcapotzalco (1975), Culhuacán (1981).' : '❌ Revisa la línea del tiempo: 1972, 1975, 1981.'}</p>`;
+      html+=`<p><b>2)</b> ${ok2? '✅ Bien. Fortalezas: potencia, máquinas, manufactura, turbomaquinaria, combustión, vínculo industrial.' : '❌ Menciona al menos dos áreas fuertes (p. ej., potencia y manufactura).'}</p>`;
+      result.innerHTML=html;
+      modal.classList.add('active');
+    });
+    document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('active'));
+
+    // Himno audio controls
+    const himnoAudio = document.getElementById('himnoAudio');
+    document.getElementById('playHimno').addEventListener('click', () => {
+      himnoAudio.play();
+    });
+    document.getElementById('pauseHimno').addEventListener('click', () => {
+      himnoAudio.pause();
+    });
+
+    // Keyboard shortcuts: N = siguiente sección
+    const ids=['sedes','actualidad','historia','incorporacion','donde','materias','segunda','azc','estructura','mando','escudo','quiz'];
+    let idx=0;
+    function goto(i){document.getElementById(ids[i]).scrollIntoView({behavior:'smooth'});idx=i}
+    document.addEventListener('keydown',(e)=>{
+      if(e.key.toLowerCase()==='n'){idx = Math.min(idx+1, ids.length-1); goto(idx)}
+      if(e.key.toLowerCase()==='p'){idx = Math.max(idx-1, 0); goto(idx)}
+    });
+  </script>
+</body>
+</html>
